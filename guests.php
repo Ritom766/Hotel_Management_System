@@ -1,3 +1,31 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+include 'db.php';
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $guest_id = $_POST['GuestID'];
+    $full_name = $_POST['FullName'];
+    $phone = $_POST['PhoneNumber'];
+    $email = $_POST['Email'];
+    $nationality = $_POST['Nationality'];
+    $nid_passport = $_POST['IdentificationNumber'];
+    $address = $_POST['Address'];
+
+    $sql = "INSERT INTO guests (guest_id, full_name, phone, email, nationality, nid_passport, address) 
+            VALUES ('$guest_id', '$full_name', '$phone', '$email', '$nationality', '$nid_passport', '$address')";
+    
+    if ($conn->query($sql) === TRUE) {
+        echo "<script>alert('Guest Registered Successfully!'); window.location.href='guests.php';</script>";
+    } else {
+        echo "<script>alert('Error: " . $conn->error . "');</script>";
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -37,7 +65,7 @@
             <li><a href="rooms.php">Rooms</a></li>
             <li><a href="guests.php" class="active">Guests</a></li>
             <li><a href="reservations.php">Reservations</a></li>
-            <li><a href="login.php" style="color: #ef4444;">Logout</a></li>
+            <li><a href="logout.php" style="color: #ef4444;">Logout</a></li>
         </ul>
     </div>
 
@@ -48,10 +76,10 @@
 
         <div class="container-box">
             <h3>Register New Guest</h3>
-            <form action="#" method="POST" class="form-grid">
+            <form action="guests.php" method="POST" class="form-grid">
                 <div class="form-group">
-                    <label>Guest ID (e.g. G0000001)</label>
-                    <input type="text" name="GuestID" maxlength="8" required>
+                    <label>Guest ID (e.g. G0001)</label>
+                    <input type="text" name="GuestID" required>
                 </div>
                 <div class="form-group">
                     <label>Full Name</label>
@@ -77,7 +105,8 @@
                     <label>Address</label>
                     <input type="text" name="Address" required>
                 </div>
-                <button type="button" class="btn" onclick="alert('Guest Registered Successfully!')">Register Guest</button>
+                <!-- Submit Button -->
+                <button type="submit" class="btn">Register Guest</button>
             </form>
         </div>
 
@@ -95,22 +124,25 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>G0000001</td>
-                        <td>Arik Rahman</td>
-                        <td>+8801811112222</td>
-                        <td>arik@example.com</td>
-                        <td>NID-9876543210</td>
-                        <td>Bangladeshi</td>
-                    </tr>
-                    <tr>
-                        <td>G0000002</td>
-                        <td>John Doe</td>
-                        <td>+1234567890</td>
-                        <td>john@example.com</td>
-                        <td>PASS-US123456</td>
-                        <td>American</td>
-                    </tr>
+                    <?php
+            
+                    $result = $conn->query("SELECT * FROM guests ORDER BY id DESC");
+                    
+                    if ($result->num_rows > 0) {
+                        while($row = $result->fetch_assoc()) {
+                            echo "<tr>
+                                    <td>{$row['guest_id']}</td>
+                                    <td>{$row['full_name']}</td>
+                                    <td>{$row['phone']}</td>
+                                    <td>{$row['email']}</td>
+                                    <td>{$row['nid_passport']}</td>
+                                    <td>{$row['nationality']}</td>
+                                  </tr>";
+                        }
+                    } else {
+                        echo "<tr><td colspan='6' style='text-align:center;'>No guests registered yet.</td></tr>";
+                    }
+                    ?>
                 </tbody>
             </table>
         </div>

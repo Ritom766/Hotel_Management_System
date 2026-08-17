@@ -11,10 +11,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $sql = "INSERT INTO reservations (guest_name, room_number, check_in, check_out) VALUES ('$guest_name', '$room_number', '$check_in', '$check_out')";
     
+    
     $update_room = "UPDATE rooms SET status='Booked' WHERE room_number='$room_number'";
 
     if ($conn->query($sql) === TRUE && $conn->query($update_room) === TRUE) {
         echo "<script>alert('Room Booked Successfully!'); window.location.href='reservations.php';</script>";
+    }
+}
+
+
+if (isset($_GET['action']) && $_GET['action'] == 'checkout') {
+    $res_id = $_GET['id'];
+    $room_no = $_GET['room'];
+
+    $update_res = "UPDATE reservations SET status='Checked Out' WHERE id='$res_id'";
+    
+    $update_room = "UPDATE rooms SET status='Available' WHERE room_number='$room_no'";
+
+    if ($conn->query($update_res) === TRUE && $conn->query($update_room) === TRUE) {
+        echo "<script>alert('Guest Checked Out! Room is now available.'); window.location.href='reservations.php';</script>";
     }
 }
 ?>
@@ -36,6 +51,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         button { padding: 10px 15px; background: #0284c7; color: #fff; border: none; cursor: pointer; border-radius: 4px; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
+        
+        /* Check-Out Button Styles */
+        .btn-checkout { background: #ef4444; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-size: 13px; font-weight: bold; transition: 0.3s; }
+        .btn-checkout:hover { background: #dc2626; }
+        .badge-done { background: #e5e7eb; color: #6b7280; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -70,11 +90,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="box">
             <h3>Reservation List</h3>
             <table>
-                <tr><th>Guest Name</th><th>Room No</th><th>Check-In</th><th>Check-Out</th><th>Status</th></tr>
+                <tr>
+                    <th>Guest Name</th>
+                    <th>Room No</th>
+                    <th>Check-In</th>
+                    <th>Check-Out</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
                 <?php
                 $res = $conn->query("SELECT * FROM reservations ORDER BY id DESC");
                 while($row = $res->fetch_assoc()) {
-                    echo "<tr><td>{$row['guest_name']}</td><td>{$row['room_number']}</td><td>{$row['check_in']}</td><td>{$row['check_out']}</td><td><b style='color:blue;'>{$row['status']}</b></td></tr>";
+                    echo "<tr>
+                            <td>{$row['guest_name']}</td>
+                            <td>{$row['room_number']}</td>
+                            <td>{$row['check_in']}</td>
+                            <td>{$row['check_out']}</td>
+                            <td><b style='color:" . ($row['status'] == 'Confirmed' ? 'blue' : 'gray') . ";'>{$row['status']}</b></td>
+                            <td>";
+                    
+                
+                    if ($row['status'] == 'Confirmed') {
+                        echo "<a href='reservations.php?action=checkout&id={$row['id']}&room={$row['room_number']}' class='btn-checkout' onclick=\"return confirm('Are you sure you want to Check-Out this guest?');\">Check-Out</a>";
+                    } else {
+                        echo "<span class='badge-done'>Checked Out</span>";
+                    }
+
+                    echo "  </td>
+                          </tr>";
                 }
                 ?>
             </table>

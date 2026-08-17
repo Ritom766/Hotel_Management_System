@@ -1,6 +1,6 @@
 <?php
 session_start();
-include 'db.php'; // ডাটাবেস কানেকশন
+include 'db.php'; // Database connection
 
 $error = '';
 
@@ -8,26 +8,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    // ডাটাবেস থেকে ইউজার খোঁজা
     $sql = "SELECT * FROM users WHERE username = '$username' AND password = '$password'";
     $result = $conn->query($sql);
 
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
         
-        // সেশনে ইউজারের তথ্য সেভ করা
         $_SESSION['user_id'] = $row['id'];
         $_SESSION['name'] = $row['name'];
         $_SESSION['role'] = $row['role'];
 
-        // Role অনুযায়ী রিডাইরেক্ট করা
-        if ($row['role'] == 'admin') {
-            header("Location: index.php");
-            exit();
-        } else if ($row['role'] == 'staff') {
-            header("Location: staff_dashboard.php");
-            exit();
-        }
+        header("Location: index.php");
+        exit();
     } else {
         $error = "Invalid Username or Password!";
     }
@@ -38,9 +30,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>System Login - Hotel Management</title>
+    <title>System Login</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
         body { background: #f4f6f9; display: flex; justify-content: center; align-items: center; height: 100vh; }
         .login-box { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 350px; text-align: center; border-top: 4px solid #0284c7; }
         .login-box h2 { margin-bottom: 25px; color: #1e293b; }
@@ -50,10 +42,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .login-box button { width: 100%; padding: 12px; background: #0284c7; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 10px; transition: 0.3s; }
         .login-box button:hover { background: #0369a1; }
         .error-msg { color: #ef4444; font-size: 14px; margin-bottom: 15px; font-weight: bold; }
+        .extra-links { margin-top: 15px; font-size: 13px; }
+        .extra-links a { color: #0284c7; text-decoration: none; font-weight: bold; }
+        .extra-links a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
-
     <div class="login-box">
         <h2>System Login</h2>
         
@@ -72,7 +66,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
             <button type="submit">Login</button>
         </form>
-    </div>
 
+        <div class="extra-links">
+            <a href="register.php">Create New Account</a> | 
+            <a href="forgot_password.php">Forgot Password?</a>
+        </div>
+    </div>
 </body>
 </html>
